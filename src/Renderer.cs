@@ -2,6 +2,8 @@ using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Spectre.Console;
 
+using MdRenderer.Utilities;
+
 namespace MdRenderer;
 
 class Renderer
@@ -75,11 +77,18 @@ class Renderer
 
     private void RenderCodeBlock(FencedCodeBlock code)
     {
-        string content = string.Join('\n', code.Lines.Lines
+        var lines = code.Lines.Lines
             .Select(l => l.ToString())
-            .SkipLast(1));
+            .SkipLast(1)
+            .ToList();
+        
+        // Remove trailing empty lines
+        while (lines.Count > 0 && string.IsNullOrWhiteSpace(lines[^1]))
+            lines.RemoveAt(lines.Count - 1);
+        
+        string content = string.Join('\n', lines);
 
-        var panel = new Panel(content)
+        var panel = new Panel(StringUtilities.Escape(content))
         {
             Border = BoxBorder.Rounded,
             BorderStyle = Style.Parse("grey dim"),
@@ -146,7 +155,7 @@ class Renderer
             switch (inline)
             {
                 case LiteralInline literal:
-                    sb.Append(Escape(literal.Content.ToString()));
+                    sb.Append(StringUtilities.Escape(literal.Content.ToString()));
                     break;
 
                 case EmphasisInline emphasis:
@@ -156,13 +165,13 @@ class Renderer
                     break;
 
                 case CodeInline code:
-                    sb.Append($"[bold yellow on grey19]{Escape(code.Content)}[/]");
+                    sb.Append($"[bold yellow on grey19]{StringUtilities.Escape(code.Content)}[/]");
                     break;
 
                 case LinkInline link:
                     string label = RenderInlines(link);
                     sb.Append($"[blue underline]{label}[/]");
-                    sb.Append($" [grey]({Escape(link.Url ?? "")})[/]");
+                    sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
                     break;
 
                 case LineBreakInline:
@@ -173,9 +182,6 @@ class Renderer
 
         return sb.ToString();
     }
-
-    private static string Escape(string text) =>
-        text.Replace("[", "[[").Replace("]", "]]");
 
     private static IEnumerable<string> Wrap(string text, int width)
     {
