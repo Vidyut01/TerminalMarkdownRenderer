@@ -15,14 +15,33 @@ class Writer
 
     public static void WriteStatusBar(int offset, int total, int viewportHeight, string filePath)
     {
+        const int RightWrapperMaxWidth = 8;
+
+        int width = Console.WindowWidth;
         int percent = total <= viewportHeight ? 100
             : (int)(100.0 * offset / Math.Max(1, total - viewportHeight));
 
         string left = " [q] Quit  [↑/↓] Scroll  [PgUp/PgDn] Page  [Home/End] Jump ";
-        string right = percent switch {100 => $" (END) {filePath} ", _ => $" {percent}% {filePath} "} ;
+        
+        if (left.Length + filePath.Length + RightWrapperMaxWidth > width) filePath = Path.GetFileName(filePath);
+        string right = percent switch {100 => $" (END) {filePath} ", _ => $" {percent}% {filePath} "};
+         
 
-        int padding = Math.Max(0, Console.WindowWidth - left.Length - right.Length);
-        string status = left + new string(' ', padding) + right;
+        string status;
+
+        if (left.Length + right.Length <= width)
+        {
+            int padding = width - left.Length - right.Length;
+            status = left + new string(' ', padding) + right;
+        }
+        else if (right.Length <= width)
+        {
+            status = new string(' ', width - right.Length) + right;
+        }
+        else
+        {
+            status = right[..width];
+        }
 
         Console.BackgroundColor = ConsoleColor.Gray;
         Console.ForegroundColor = ConsoleColor.Black;
