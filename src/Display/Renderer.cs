@@ -1,7 +1,11 @@
 using System.Text;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
+using MdTable = Markdig.Extensions.Tables.Table;
+using MdTableRow = Markdig.Extensions.Tables.TableRow;
+using MdTableCell = Markdig.Extensions.Tables.TableCell;
 using Spectre.Console;
+using SpectreTable = Spectre.Console.Table;
 using MdRenderer.Utilities;
 
 namespace MdRenderer;
@@ -41,7 +45,7 @@ class Renderer
             case ParagraphBlock p:
                 RenderParagraph(p);
                 break;
-            case FencedCodeBlock c:
+            case CodeBlock c:
                 RenderCodeBlock(c);
                 break;
             case ListBlock l:
@@ -49,6 +53,9 @@ class Renderer
                 break;
             case QuoteBlock q:
                 RenderQuote(q, 0);
+                break;
+            case MdTable t:
+                RenderTable(t);
                 break;
             case ThematicBreakBlock:
                 RenderRule();
@@ -87,7 +94,7 @@ class Renderer
         _console.WriteLine();
     }
 
-    private void RenderCodeBlock(FencedCodeBlock code)
+    private void RenderCodeBlock(CodeBlock code)
     {
         var lines = code.Lines.Lines
             .Select(l => l.ToString())
@@ -160,6 +167,35 @@ class Renderer
     {
         _console.WriteLine();
         _console.Write(new Rule() { Style = Style.Parse("grey dim") });
+        _console.WriteLine();
+    }
+
+    private void RenderTable(MdTable mdTable)
+    {
+        var table = new SpectreTable()
+            .BorderColor(Color.Grey)
+            .Border(TableBorder.Rounded);
+
+        foreach (var row in mdTable.Cast<MdTableRow>())
+        {
+            var cells = row
+                .Cast<MdTableCell>()
+                .Select(cell => cell.FirstOrDefault() is ParagraphBlock p ? RenderInlines(p.Inline) : "")
+                .ToArray();
+
+            if (row.IsHeader)
+            {
+                foreach (var cell in cells)
+                    table.AddColumn(new TableColumn($"[bold]{cell}[/]"));
+            }
+            else
+            {
+                table.AddRow(cells);
+            }
+        }
+
+        _console.WriteLine();
+        _console.Write(table);
         _console.WriteLine();
     }
 
