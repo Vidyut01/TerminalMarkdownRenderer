@@ -16,8 +16,7 @@ if (Directory.Exists(path))
 
 try
 {
-    var app = new Main();
-    return await app.RunAsync(path);
+    return await Main.RunAsync(path);
 }
 catch (Exception err)
 {

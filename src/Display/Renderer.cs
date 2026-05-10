@@ -12,7 +12,6 @@ namespace MdRenderer;
 
 class Renderer
 {
-    private const int MaxWidth = 80;
     private const int LeftMargin = 2;
     private readonly string _margin = new(' ', LeftMargin);
 
@@ -97,8 +96,7 @@ class Renderer
     {
         string text = RenderInlines(paragraph.Inline);
         foreach (var segment in text.Split('\n'))
-            foreach (var line in StringUtilities.Wrap(segment, MaxWidth))
-                _console.MarkupLine($"{_margin}{line}");
+            _console.MarkupLine($"{_margin}{segment}");
         _console.WriteLine();
     }
 
@@ -165,8 +163,7 @@ class Renderer
             if (child is ParagraphBlock p)
             {
                 string text = RenderInlines(p.Inline);
-                foreach (var line in StringUtilities.Wrap(text, MaxWidth - 4 * (level + 1)))
-                    _console.MarkupLine($"{_margin}{prefix}[italic grey]{line}[/]");
+                _console.MarkupLine($"{_margin}{prefix}[italic grey]{text}[/]");
             }
             else if (child is QuoteBlock nested)
                 RenderQuote(nested, level + 1);

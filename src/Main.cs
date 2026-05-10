@@ -1,11 +1,10 @@
 using Markdig;
-using Markdig.Syntax;
 
 namespace MdRenderer;
 
 public class Main
 {
-    public async Task<int> RunAsync(string filePath)
+    public static async Task<int> RunAsync(string filePath)
     {
         using var reader = new StreamReader(filePath);
         string content = reader.ReadToEnd();
