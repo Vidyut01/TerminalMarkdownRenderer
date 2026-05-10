@@ -82,7 +82,7 @@ class Renderer
     {
         string text = RenderInlines(paragraph.Inline);
         foreach (var segment in text.Split('\n'))
-            foreach (var line in Wrap(segment, MaxWidth))
+            foreach (var line in StringUtilities.Wrap(segment, MaxWidth))
                 _console.MarkupLine($"{_margin}{line}");
         _console.WriteLine();
     }
@@ -145,7 +145,7 @@ class Renderer
             if (child is ParagraphBlock p)
             {
                 string text = RenderInlines(p.Inline);
-                foreach (var line in Wrap(text, MaxWidth - 4 * (level + 1)))
+                foreach (var line in StringUtilities.Wrap(text, MaxWidth - 4 * (level + 1)))
                     _console.MarkupLine($"{_margin}{prefix}[italic grey]{line}[/]");
             }
             else if (child is QuoteBlock nested)
@@ -198,30 +198,5 @@ class Renderer
         }
 
         return sb.ToString();
-    }
-
-    private static IEnumerable<string> Wrap(string text, int width)
-    {
-        if (text.Length <= width)
-        {
-            yield return text;
-            yield break;
-        }
-
-        var words = text.Split(' ');
-        var line = new StringBuilder();
-
-        foreach (var word in words)
-        {
-            if (line.Length + word.Length + 1 > width && line.Length > 0)
-            {
-                yield return line.ToString().TrimEnd();
-                line.Clear();
-            }
-            line.Append(word + " ");
-        }
-
-        if (line.Length > 0)
-            yield return line.ToString().TrimEnd();
     }
 }
