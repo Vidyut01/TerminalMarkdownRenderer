@@ -47,6 +47,9 @@ class Renderer
             case ParagraphBlock p:
                 RenderParagraph(p);
                 break;
+            case FencedCodeBlock c:
+                RenderCodeBlock(c);
+                break;
             case CodeBlock c:
                 RenderCodeBlock(c);
                 break;
@@ -117,6 +120,9 @@ class Renderer
             BorderStyle = Style.Parse("grey dim"),
             Padding = new Padding(1, 0)
         };
+
+        if (code is FencedCodeBlock fenced && !string.IsNullOrEmpty(fenced.Info))
+            panel.Header = new PanelHeader($"[grey]{fenced.Info}[/]");
 
         _console.WriteLine();
         _console.Write(new Padder(panel).PadLeft(LeftMargin));
