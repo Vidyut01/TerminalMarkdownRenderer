@@ -18,9 +18,11 @@ class Renderer
 
     private IAnsiConsole _console = null!;
     private StringWriter _writer = null!;
+    private string _source = null!;
 
-    public List<string> Render(MarkdownDocument doc)
+    public List<string> Render(MarkdownDocument doc, string source)
     {
+        _source = source;
         _writer = new StringWriter();
         _console = AnsiConsole.Create(new AnsiConsoleSettings
         {
@@ -59,6 +61,9 @@ class Renderer
                 break;
             case ThematicBreakBlock:
                 RenderRule();
+                break;
+            default:
+                RenderUnsupportedMarkdown(block);
                 break;
         }
     }
@@ -114,7 +119,7 @@ class Renderer
         };
 
         _console.WriteLine();
-        _console.Write(panel);
+        _console.Write(new Padder(panel).PadLeft(LeftMargin));
         _console.WriteLine();
     }
 
@@ -159,6 +164,8 @@ class Renderer
             }
             else if (child is QuoteBlock nested)
                 RenderQuote(nested, level + 1);
+            else
+                RenderBlock(child);
         }
         if (level == 0) _console.WriteLine();
     }
@@ -195,7 +202,7 @@ class Renderer
         }
 
         _console.WriteLine();
-        _console.Write(table);
+        _console.Write(new Padder(table).PadLeft(LeftMargin));
         _console.WriteLine();
     }
 
@@ -243,6 +250,11 @@ class Renderer
 
                 case LinkInline link:
                     string label = RenderInlines(link);
+                    if (link.IsImage)
+                    {
+                        sb.Append($"[grey][[image: {label}]][/]");
+                        break;
+                    }
                     sb.Append($"[link={link.Url ?? ""}][blue underline]{label}[/][/]");
                     sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
                     break;
@@ -259,5 +271,13 @@ class Renderer
         }
 
         return sb.ToString();
+    }
+
+    private void RenderUnsupportedMarkdown(Block block)
+    {
+        string raw = _source[block.Span.Start..(block.Span.End + 1)];
+        foreach (var line in raw.Split('\n'))
+            _console.MarkupLine($"{_margin}[grey]{StringUtilities.Escape(line)}[/]");
+        _console.WriteLine();
     }
 }

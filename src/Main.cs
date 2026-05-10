@@ -13,7 +13,7 @@ public class Main
         var pipeline = new MarkdownPipelineBuilder().UseEmphasisExtras().UsePipeTables().Build();
         var doc = Markdown.Parse(content, pipeline);
         var renderer = new MdRenderer.Renderer();
-        var lines = renderer.Render(doc);
+        var lines = renderer.Render(doc, content);
 
         var pager = new MdRenderer.Pager(lines, filePath);
         pager.Run();
