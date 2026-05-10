@@ -132,6 +132,8 @@ class Renderer
                 else
                     RenderBlock(child);
             }
+
+            if (list.IsLoose && index <= list.Count) _console.WriteLine();
         }
         if (level == 0) _console.WriteLine();
     }
@@ -207,6 +209,11 @@ class Renderer
                     string label = RenderInlines(link);
                     sb.Append($"[link={link.Url ?? ""}][blue underline]{label}[/][/]");
                     sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
+                    break;
+                
+                case AutolinkInline autolink:
+                    string autolinkUrl = StringUtilities.Escape(autolink.Url ?? "");
+                    sb.Append($"[link={autolink.Url ?? ""}][blue underline]{autolinkUrl}[/][/]");
                     break;
 
                 case LineBreakInline lb:
