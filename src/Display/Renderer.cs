@@ -113,7 +113,7 @@ class Renderer
 
     private void RenderList(ListBlock list, int level)
     {
-        string indent = new string(' ', level * 2);
+        string indent = new(' ', level * 2);
         int index = 1;
         foreach (var item in list.Cast<ListItemBlock>())
         {
@@ -177,12 +177,25 @@ class Renderer
 
                 case EmphasisInline emphasis:
                     string inner = RenderInlines(emphasis);
-                    string tag = emphasis.DelimiterChar switch
+
+                    string? tag = null;
+                    if (emphasis.DelimiterChar != '*' && emphasis.DelimiterChar != '_')
                     {
-                        '~' => "strikethrough",
-                        '+' => "underline",
-                        _ => emphasis.DelimiterCount == 2 ? "bold" : "italic"
-                    };
+                        if (emphasis.DelimiterChar == '~' && emphasis.DelimiterCount == 2)
+                            tag = "strikethrough";
+                        else if (emphasis.DelimiterChar == '+' && emphasis.DelimiterCount == 2)
+                            tag = "underline";
+                    }
+                    else
+                        tag = emphasis.DelimiterCount == 2 ? "bold" : "italic";
+                    
+                    if (tag is null)
+                    {
+                        string delimiters = new(emphasis.DelimiterChar, emphasis.DelimiterCount);
+                        sb.Append($"{delimiters}{inner}{delimiters}");
+                        break;
+                    }
+
                     sb.Append($"[{tag}]{inner}[/]");
                     break;
 
