@@ -35,12 +35,24 @@ class Renderer
     {
         switch (block)
         {
-            case HeadingBlock h:    RenderHeading(h); break;
-            case ParagraphBlock p:  RenderParagraph(p); break;
-            case FencedCodeBlock c: RenderCodeBlock(c); break;
-            case ListBlock l:       RenderList(l); break;
-            case QuoteBlock q:      RenderQuote(q); break;
-            case ThematicBreakBlock: RenderRule(); break;
+            case HeadingBlock h:
+                RenderHeading(h);
+                break;
+            case ParagraphBlock p:
+                RenderParagraph(p);
+                break;
+            case FencedCodeBlock c:
+                RenderCodeBlock(c);
+                break;
+            case ListBlock l:
+                RenderList(l, 0);
+                break;
+            case QuoteBlock q:
+                RenderQuote(q);
+                break;
+            case ThematicBreakBlock:
+                RenderRule();
+                break;
         }
     }
 
@@ -98,8 +110,9 @@ class Renderer
         _console.WriteLine();
     }
 
-    private void RenderList(ListBlock list)
+    private void RenderList(ListBlock list, int level)
     {
+        string indent = new string(' ', level * 2);
         int index = 1;
         foreach (var item in list.Cast<ListItemBlock>())
         {
@@ -109,12 +122,17 @@ class Renderer
             string text = item.FirstOrDefault() is ParagraphBlock p
                 ? RenderInlines(p.Inline) : "";
 
-            _console.MarkupLine($"{_margin}  [{color}]{bullet}[/] {text}");
+            _console.MarkupLine($"{_margin}{indent}[{color}]{bullet}[/] {text}");
 
             foreach (var child in item.Skip(1))
-                RenderBlock(child);
+            {
+                if (child is ListBlock nested)
+                    RenderList(nested, level + 1);
+                else
+                    RenderBlock(child);
+            }
         }
-        _console.WriteLine();
+        if (level == 0) _console.WriteLine();
     }
 
     private void RenderQuote(QuoteBlock quote)
