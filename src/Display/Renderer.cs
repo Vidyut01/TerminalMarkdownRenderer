@@ -96,7 +96,7 @@ class Renderer
     {
         string text = RenderInlines(paragraph.Inline);
         foreach (var segment in text.Split('\n'))
-            _console.MarkupLine($"{_margin}{segment}");
+            _console.Write(new Padder(new Markup(segment), new Padding(LeftMargin, 0, 0, 0)));
         _console.WriteLine();
     }
 
