@@ -187,7 +187,7 @@ class Renderer
 
                 case LinkInline link:
                     string label = RenderInlines(link);
-                    sb.Append($"[blue underline]{label}[/]");
+                    sb.Append($"[link={link.Url ?? ""}][blue underline]{label}[/][/]");
                     sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
                     break;
 
