@@ -177,7 +177,12 @@ class Renderer
 
                 case EmphasisInline emphasis:
                     string inner = RenderInlines(emphasis);
-                    string tag = emphasis.DelimiterCount == 2 ? "bold" : "italic";
+                    string tag = emphasis.DelimiterChar switch
+                    {
+                        '~' => "strikethrough",
+                        '+' => "underline",
+                        _ => emphasis.DelimiterCount == 2 ? "bold" : "italic"
+                    };
                     sb.Append($"[{tag}]{inner}[/]");
                     break;
 

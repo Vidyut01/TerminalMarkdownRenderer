@@ -10,7 +10,8 @@ public class Main
         using var reader = new StreamReader(filePath);
         string content = reader.ReadToEnd();
 
-        var doc = Markdown.Parse(content);
+        var pipeline = new MarkdownPipelineBuilder().UseEmphasisExtras().Build();
+        var doc = Markdown.Parse(content, pipeline);
         var renderer = new MdRenderer.Renderer();
         var lines = renderer.Render(doc);
 
