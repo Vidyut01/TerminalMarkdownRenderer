@@ -48,7 +48,7 @@ class Renderer
                 RenderList(l, 0);
                 break;
             case QuoteBlock q:
-                RenderQuote(q);
+                RenderQuote(q, 0);
                 break;
             case ThematicBreakBlock:
                 RenderRule();
@@ -81,8 +81,9 @@ class Renderer
     private void RenderParagraph(ParagraphBlock paragraph)
     {
         string text = RenderInlines(paragraph.Inline);
-        foreach (var line in Wrap(text, MaxWidth))
-            _console.MarkupLine($"{_margin}{line}");
+        foreach (var segment in text.Split('\n'))
+            foreach (var line in Wrap(segment, MaxWidth))
+                _console.MarkupLine($"{_margin}{line}");
         _console.WriteLine();
     }
 
@@ -135,19 +136,22 @@ class Renderer
         if (level == 0) _console.WriteLine();
     }
 
-    private void RenderQuote(QuoteBlock quote)
+    private void RenderQuote(QuoteBlock quote, int level)
     {
-        _console.WriteLine();
+        string prefix = string.Concat(Enumerable.Repeat("[magenta dim]│[/] ", level + 1));
+        if (level == 0) _console.WriteLine();
         foreach (var child in quote)
         {
             if (child is ParagraphBlock p)
             {
                 string text = RenderInlines(p.Inline);
-                foreach (var line in Wrap(text, MaxWidth - 4))
-                    _console.MarkupLine($"{_margin}[magenta dim]│[/] [italic grey]{line}[/]");
+                foreach (var line in Wrap(text, MaxWidth - 4 * (level + 1)))
+                    _console.MarkupLine($"{_margin}{prefix}[italic grey]{line}[/]");
             }
+            else if (child is QuoteBlock nested)
+                RenderQuote(nested, level + 1);
         }
-        _console.WriteLine();
+        if (level == 0) _console.WriteLine();
     }
 
     private void RenderRule()
@@ -187,8 +191,8 @@ class Renderer
                     sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
                     break;
 
-                case LineBreakInline:
-                    sb.Append('\n');
+                case LineBreakInline lb:
+                    sb.Append(lb.IsHard ? '\n' : ' ');
                     break;
             }
         }
