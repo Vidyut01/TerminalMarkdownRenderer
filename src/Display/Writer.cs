@@ -15,7 +15,7 @@ class Writer
 
     public static void WriteStatusBar(int offset, int total, int viewportHeight, string filePath)
     {
-        const int RightWrapperMaxWidth = 8;
+        const int RightWrapperMaxWidth = 6;
 
         int width = Console.WindowWidth;
         int percent = total <= viewportHeight ? 100
@@ -24,7 +24,7 @@ class Writer
         string left = " [q] Quit  [↑/↓] Scroll  [PgUp/PgDn] Page  [Home/End] Jump ";
         
         if (left.Length + filePath.Length + RightWrapperMaxWidth > width) filePath = Path.GetFileName(filePath);
-        string right = percent switch {100 => $" (END) {filePath} ", _ => $" {percent}% {filePath} "};
+        string right = percent switch {100 => $" END {filePath} ", _ => $" {percent}% {filePath} "};
          
 
         string status;
