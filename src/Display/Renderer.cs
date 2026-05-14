@@ -6,7 +6,6 @@ using MdTableRow = Markdig.Extensions.Tables.TableRow;
 using MdTableCell = Markdig.Extensions.Tables.TableCell;
 using Spectre.Console;
 using SpectreTable = Spectre.Console.Table;
-using MdRenderer.Utilities;
 
 namespace MdRenderer;
 
@@ -112,7 +111,7 @@ class Renderer
 
         string content = string.Join('\n', lines);
 
-        var panel = new Panel(StringUtilities.Escape(content))
+        var panel = new Panel(Escape(content))
         {
             Border = BoxBorder.Rounded,
             BorderStyle = Style.Parse("grey dim"),
@@ -220,7 +219,7 @@ class Renderer
             switch (inline)
             {
                 case LiteralInline literal:
-                    sb.Append(StringUtilities.Escape(literal.Content.ToString()));
+                    sb.Append(Escape(literal.Content.ToString()));
                     break;
 
                 case EmphasisInline emphasis:
@@ -248,7 +247,7 @@ class Renderer
                     break;
 
                 case CodeInline code:
-                    sb.Append($"[bold yellow on grey19]{StringUtilities.Escape(code.Content)}[/]");
+                    sb.Append($"[bold yellow on grey19]{Escape(code.Content)}[/]");
                     break;
 
                 case LinkInline link:
@@ -259,11 +258,11 @@ class Renderer
                         break;
                     }
                     sb.Append($"[link={link.Url ?? ""}][blue underline]{label}[/][/]");
-                    sb.Append($" [grey]({StringUtilities.Escape(link.Url ?? "")})[/]");
+                    sb.Append($" [grey]({Escape(link.Url ?? "")})[/]");
                     break;
                 
                 case AutolinkInline autolink:
-                    string autolinkUrl = StringUtilities.Escape(autolink.Url ?? "");
+                    string autolinkUrl = Escape(autolink.Url ?? "");
                     sb.Append($"[link={autolink.Url ?? ""}][blue underline]{autolinkUrl}[/][/]");
                     break;
 
@@ -280,7 +279,10 @@ class Renderer
     {
         string raw = _source[block.Span.Start..(block.Span.End + 1)];
         foreach (var line in raw.Split('\n'))
-            _console.MarkupLine($"{_margin}[grey]{StringUtilities.Escape(line)}[/]");
+            _console.MarkupLine($"{_margin}[grey]{Escape(line)}[/]");
         _console.WriteLine();
     }
+
+    private static string Escape(string text) =>
+        text.Replace("[", "[[").Replace("]", "]]");
 }
